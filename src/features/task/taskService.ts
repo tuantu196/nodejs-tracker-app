@@ -1,3 +1,4 @@
+import { JsonArrIndexOptions } from './../../../node_modules/@redis/json/dist/lib/commands/ARRINDEX.d';
 import prisma from "../../config/prismaClient";
 import { TaskStatus, User } from "../../generated/prisma";
 
@@ -62,6 +63,59 @@ export const deleteTaskService = async (taskID: string) => {
     }
 }
 
-export const updateTaskService = async (title: string, description: string, assigneeId: number, user: User): Promise<any> => { 
-    
+export const updateTaskService = async (id: number, title: string, description: string, assigneeId: number, user: User, status: TaskStatus): Promise<any> => { 
+
+    const updateTask = await prisma.task.findUnique({
+        where: {
+            id
+        }
+    })
+
+    if (!updateTask) {
+        throw new Error("Task not found!");   
+    }
+
+    if (updateTask.creatorId !== user.id) {
+        throw new Error("You are not authorized to update this task!");
+    }
+
+    if (assigneeId) {
+        const assignee = await prisma.user.findUnique({
+            where: {
+                id: assigneeId
+            }
+        })
+        if (!assignee) {
+            throw new Error("Assignee ID isn't correct");
+            
+        }
+    }
+
+    const updatedTask = await prisma.task.update({
+        where: {
+            id
+        },
+        data: {
+            title,
+            description,
+            assigneeId,
+            status,
+        }
+    })
+
+    if (!updatedTask) {
+        throw new Error("Update Task not successfully!");
+        
+    }
+
+    const { id: idUpdated, title: titleUpdated, description: descriptionUpdated, assigneeId: assigneeIdUpdated, status: statusUpdated } = updatedTask;
+
+    return {
+      idUpdated,
+      titleUpdated,
+      descriptionUpdated,
+      assigneeIdUpdated,
+      statusUpdated,
+    };
+
 }

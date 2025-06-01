@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../../config/prismaClient";
-import { TaskStatus } from "../../generated/prisma";
-import { createTaskService, deleteTaskService, getListTasksService, getTaskDetailService } from "./taskService";
+import { createTaskService, deleteTaskService, getListTasksService, getTaskDetailService, updateTaskService } from "./taskService";
 
 
 export const createTask = async (req: Request, res: Response): Promise<any> => {
@@ -39,8 +37,15 @@ export const getTaskDetail = async (req: Request, res: Response): Promise<any> =
     }
 }
 
-export const updateTask = async (req: Request, res: Response) : Promise<any>=> { 
-    return res.status(200).json({ message: "Task created successfully" });
+export const updateTask = async (req: Request, res: Response): Promise<any> => { 
+    const { id, title, description, assigneeId, status } = req.body;
+    
+    try {
+        const updateTask = updateTaskService(id, title, description, assigneeId, req.user, status)
+        return res.success("", updateTask)
+    } catch (error) {
+        return res.failure(String(error), 400);
+    }
 }
 
 export const deleteTask = async (req: Request, res: Response): Promise<any> => { 

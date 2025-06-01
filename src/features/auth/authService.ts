@@ -1,4 +1,3 @@
-import { refresh } from "./authController";
 import prisma from "../../config/prismaClient";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -34,9 +33,8 @@ export const loginService = async (email: string, password: string): Promise<{ u
     refreshToken,
     "EX",
     60 * 60 * 24 * 7
-  ); // 7 days
-
-  // Loại bỏ password trước khi trả về client
+    ); 
+    
   const { password: _, ...userWithoutPassword } = user;
   return { user: userWithoutPassword, token, refreshToken };
 };
